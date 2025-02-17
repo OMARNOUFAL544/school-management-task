@@ -1,0 +1,135 @@
+CREATE DATABASE SchoolManagement;
+USE SchoolManagement;
+
+CREATE TABLE Classroom (
+    ClassroomID INT PRIMARY KEY,
+    ClassroomName VARCHAR(50),
+    Capacity INT
+);
+
+CREATE TABLE Teacher (
+    TeacherID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Email VARCHAR(100),
+    PhoneNumber VARCHAR(20),
+    Specialization VARCHAR(50)
+);
+
+CREATE TABLE Course (
+    CourseID INT PRIMARY KEY,
+    CourseName VARCHAR(100),
+    TeacherID INT,
+    FOREIGN KEY (TeacherID) REFERENCES Teacher(TeacherID)
+);
+
+CREATE TABLE Student (
+    StudentID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    DateOfBirth DATE,
+    Gender ENUM('Male', 'Female'),
+    ClassroomID INT,
+    FOREIGN KEY (ClassroomID) REFERENCES Classroom(ClassroomID)
+);
+
+CREATE TABLE Attendance (
+    AttendanceID INT PRIMARY KEY,
+    StudentID INT,
+    CourseID INT,
+    Date DATE,
+    Status ENUM('Present', 'Absent'),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID),
+    FOREIGN KEY (CourseID) REFERENCES Course(CourseID)
+);
+
+INSERT INTO Classroom (ClassroomID, ClassroomName, Capacity) VALUES
+(1, 'Grade 1 - A', 30),
+(2, 'Grade 1 - B', 28),
+(3, 'Grade 2 - A', 32),
+(4, 'Grade 2 - B', 29),
+(5, 'Grade 3 - A', 31);
+
+INSERT INTO Teacher (TeacherID, Name, Email, PhoneNumber, Specialization) VALUES
+(101, 'John Smith', 'john.smith@example.com', '123-456-7890', 'Mathematics'),
+(102, 'Jane Doe', 'jane.doe@example.com', '987-654-3210', 'English'),
+(103, 'Robert Brown', 'robert.brown@example.com', '555-666-7777', 'Science'),
+(104, 'Emily Clark', 'emily.clark@example.com', '444-555-6666', 'History'),
+(105, 'Michael Johnson', 'michael.johnson@example.com', '111-222-3333', 'Physics');
+
+INSERT INTO Course (CourseID, CourseName, TeacherID) VALUES
+(201, 'Algebra I', 101),
+(202, 'Grammar Basics', 102),
+(203, 'Biology Fundamentals', 103),
+(204, 'World History', 104),
+(205, 'Introduction to Physics', 105);
+
+INSERT INTO Student (StudentID, Name, DateOfBirth, Gender, ClassroomID) VALUES
+(301, 'Alice Johnson', '2012-05-10', 'Female', 1),
+(302, 'David Williams', '2011-07-22', 'Male', 2),
+(303, 'Sophia Martinez', '2012-03-18', 'Female', 3),
+(304, 'James Anderson', '2011-09-30', 'Male', 4),
+(305, 'Olivia Thomas', '2012-01-25', 'Female', 5);
+
+INSERT INTO Attendance (AttendanceID, StudentID, CourseID, Date, Status) VALUES
+(401, 301, 201, '2025-02-12', 'Present'),
+(402, 302, 202, '2025-02-12', 'Absent'),
+(403, 303, 203, '2025-02-12', 'Present'),
+(404, 304, 204, '2025-02-12', 'Present'),
+(405, 305, 205, '2025-02-12', 'Absent');
+
+
+SELECT * FROM Student WHERE Gender = 'Female';
+
+SELECT * FROM Teacher WHERE Specialization IN ('Mathematics', 'Physics');
+
+SELECT * FROM Student WHERE DateOfBirth BETWEEN '2011-01-01' AND '2012-12-31';
+
+SELECT * FROM Course ORDER BY CourseName ASC;
+
+SELECT * FROM Student WHERE Name LIKE 'A%';
+
+SELECT * FROM Student WHERE Name LIKE '%a%';
+
+
+SELECT MIN(Capacity) FROM Classroom;
+
+
+SELECT MAX(Capacity) FROM Classroom;
+
+
+SELECT AVG(Capacity) FROM Classroom;
+
+
+SELECT COUNT(*) FROM Student;
+
+SELECT ClassroomID, COUNT(*) AS TotalStudents FROM Student GROUP BY ClassroomID;
+
+SELECT Student.Name, Classroom.ClassroomName FROM Student JOIN Classroom ON Student.ClassroomID = Classroom.ClassroomID;
+
+SELECT Course.CourseName, Teacher.Name FROM Course JOIN Teacher ON Course.TeacherID = Teacher.TeacherID;
+
+SELECT Student.Name, Attendance.* FROM Student LEFT JOIN Attendance ON Student.StudentID = Attendance.StudentID;
+
+SELECT Course.CourseName, Teacher.Name FROM Course LEFT JOIN Teacher ON Course.TeacherID = Teacher.TeacherID;
+
+SELECT Teacher.Name, Course.CourseName FROM Teacher LEFT JOIN Course ON Teacher.TeacherID = Course.TeacherID;
+
+SELECT DISTINCT Student.Name FROM Student JOIN Attendance ON Student.StudentID = Attendance.StudentID WHERE Attendance.Status = 'Present';
+
+SELECT Student.Name FROM Student LEFT JOIN Attendance ON Student.StudentID = Attendance.StudentID WHERE Attendance.StudentID IS NULL;
+
+SELECT CourseID, COUNT(StudentID) AS TotalStudents FROM Attendance GROUP BY CourseID HAVING COUNT(StudentID) > 1;
+
+SELECT TeacherID, COUNT(CourseID) AS TotalCourses FROM Course GROUP BY TeacherID ORDER BY TotalCourses DESC LIMIT 1;
+
+SELECT Student.Name FROM Student JOIN Classroom ON Student.ClassroomID = Classroom.ClassroomID WHERE Classroom.Capacity = (SELECT MAX(Capacity) FROM Classroom);
+
+SELECT Course.CourseName FROM Course JOIN Teacher ON Course.TeacherID = Teacher.TeacherID WHERE Teacher.Name = 'John Smith';
+
+SELECT DISTINCT Student.Name FROM Student JOIN Attendance ON Student.StudentID = Attendance.StudentID JOIN Course ON Attendance.CourseID = Course.CourseID WHERE Course.CourseName = 'Algebra I' AND Attendance.Status = 'Present';
+
+SELECT Specialization, COUNT(TeacherID) AS TotalTeachers FROM Teacher GROUP BY Specialization;
+
+SELECT CourseID, COUNT(StudentID) AS TotalEnrolled FROM Attendance GROUP BY CourseID ORDER BY TotalEnrolled DESC LIMIT 3;
+
+SELECT DISTINCT Student.Name FROM Student JOIN Attendance ON Student.StudentID = Attendance.StudentID WHERE Student.StudentID NOT IN (SELECT StudentID FROM Attendance WHERE Status = 'Absent');
+
